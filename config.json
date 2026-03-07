@@ -2,8 +2,10 @@
     "password": "Hola123#",
     
     "special": {
-        "write_email": [3],
-        "write_pasword": [5],
-        "write_code":[6]
+        "write_email": [3, 10],
+        "write_pasword": [5, 11],
+        "write_code": [6],
+        "human": [9],
+        "scroll": [12]
     }
 }

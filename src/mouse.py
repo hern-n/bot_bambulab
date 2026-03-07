@@ -2,6 +2,9 @@ import pyautogui
 from typing import Union, Tuple, List
 import pyperclip
 import logging
+import winsound
+import sys
+import keyboard  
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +48,7 @@ def paste_from_clipboard() -> bool:
         logger.info(f"Pasting clipboard content: {repr(clipboard_content)}")
 
         # Use Ctrl+V shortcut for more reliable pasting of special characters
-        pyautogui.hotkey('ctrl', 'v')
+        pyautogui.hotkey("ctrl", "v")
 
         logger.info("Successfully pasted clipboard content")
         return True
@@ -158,3 +161,26 @@ def go(x: int, y: int) -> bool:
         logger.error(f"Error during mouse movement: {e}")
         return False
 
+
+def wait_for_human(message: str = "Presiona F2 para continuar...") -> None:
+    """
+    Play two beeps and wait for the user to press F2 to continue.
+
+    This function pauses execution until a human presses the F2 key,
+    playing audio beeps to alert the user. Works even if the console
+    is not in foreground.
+
+    Args:
+        message: The message to display to the user (default in Spanish)
+    """
+
+    logger = logging.getLogger(__name__)
+    logger.info("Playing alert beeps for human attention")
+    winsound.MessageBeep(winsound.MB_OK)
+    winsound.MessageBeep(winsound.MB_OK)
+
+    print(message)
+
+    # Espera hasta que se presione F7
+    keyboard.wait("f2")
+    logger.info("Human pressed F2, continuing execution")

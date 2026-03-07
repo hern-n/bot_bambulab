@@ -95,9 +95,13 @@ def main():
     elif current_element_number in special["write_pasword"]:
         mouse.type_text(password)
     elif current_element_number in special["write_code"]:
-        time.sleep(waiting_time)
         code = agentmail_client.get_code(agentmail_client.get_email(email))
         mouse.type_text(code)
+    elif current_element_number in special["human"]:
+        mouse.wait_for_human()
+    elif current_element_number in special["scroll"]:
+        time.sleep(waiting_time)
+        mouse.scroll_down()
 
 
 
