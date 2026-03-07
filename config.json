@@ -1,0 +1,9 @@
+{
+    "password": "Hola123#",
+    
+    "special": {
+        "write_email": [3],
+        "write_pasword": [5],
+        "write_code":[6]
+    }
+}
