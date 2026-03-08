@@ -3,9 +3,22 @@
     
     "special": {
         "write_email": [3, 10],
-        "write_pasword": [5, 11],
+        "write_things": {
+            "5": "Hola123#",
+            "11": "Hola123#",
+            "16": "adrigongui"
+        },
         "write_code": [6],
         "human": [9],
         "scroll": [12]
+    },
+
+    "more_time": [15, 16, 20, 26, 31],
+
+    "coordenates": {
+        "16": [624, 164],
+        "19": [938, 743],
+        "25": [1290, 750],
+        "30": [1562, 758]
     }
 }

@@ -13,10 +13,11 @@ secuenciales en pantalla y realizando acciones específicas según el tipo de el
 
 import json
 import os
+import sys
+import time
 
 import scanner
 import mouse
-import time
 import agentmail_client
 
 
@@ -60,47 +61,65 @@ def main():
     global current_element_number, data, email
 
     # Inicializar las acciones específicas
-    password = data["password"]
     special = data["special"]
+    more_time = data["more_time"]
+    coordenates = data["coordenates"]
 
     # Incrementar el número de elemento actual para buscar el siguiente elemento en la secuencia
     current_element_number += 1
 
     # Esperar un tiempo configurable para asegurar que la interfaz se cargue completamente
-    time.sleep(waiting_time)
+    if current_element_number in more_time:
+        time.sleep(waiting_time * 3.1)
+    else:
+        time.sleep(waiting_time)
+    
 
     # Limpiar capturas de pantalla anteriores para evitar confusiones en el análisis
     scanner.clear_screenshots()
 
-    # Capturar la pantalla actual para análisis de elementos
-    scanner.scan()
+    # Si está en la lista de posiciones manuales, qeu clique en als coordendas manuales y se salte el resto
+    if str(current_element_number) in coordenates:
+        print("hi: ", current_element_number)
+        mouse.click_at_position(coordenates[str(current_element_number)])
 
-    # Buscar la posición del elemento actual usando coincidencia de plantillas
-    match_result = scanner.match_template(
-        "screenshots/1.png", f"elements/{current_element_number}.png"
-    )
+    else: 
 
-    # Si se encuentra el elemento, realizar clic en su posición
-    if match_result is not None:
-        mouse.click_at_position(match_result)
-        print(f"Clicked on element {current_element_number}")
-    else:
-        # Registrar cuando no se encuentra un elemento para depuración
-        print(f"No match found for elements/{current_element_number}.png")
+        # Capturar la pantalla actual para análisis de elementos
+        scanner.scan()
+
+        for i in range (3):
+            # Buscar la posición del elemento actual usando coincidencia de plantillas
+            match_result = scanner.match_template(
+                "screenshots/1.png", f"elements/{current_element_number}.png"
+            )
+
+            # Si se encuentra el elemento, realizar clic en su posición
+            if match_result is not None:
+                mouse.click_at_position(match_result)
+                print(f"Clicked on element {current_element_number}")
+                break
+            else:
+                # Registrar cuando no se encuentra un elemento para depuración
+                print(f"No match found for elements/{current_element_number}.png")
+                time.sleep(waiting_time)
+                if i == 2: 
+                    mouse.wait_for_human()
+                    sys.exit()
 
     # Ejecutar acciones específicas según el tipo de elemento detectado
 
     if current_element_number in special["write_email"]:
         mouse.type_text(email)
-    elif current_element_number in special["write_pasword"]:
-        mouse.type_text(password)
+    elif str(current_element_number) in special["write_things"]:
+        mouse.type_text(special["write_things"][str(current_element_number)])
     elif current_element_number in special["write_code"]:
         code = agentmail_client.get_code(agentmail_client.get_email(email))
         mouse.type_text(code)
     elif current_element_number in special["human"]:
         mouse.wait_for_human()
     elif current_element_number in special["scroll"]:
-        time.sleep(waiting_time)
+        time.sleep(4)
         mouse.scroll_down()
 
 
