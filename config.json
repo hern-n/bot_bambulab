@@ -1,19 +1,21 @@
 {
-    "password": "Hola123#",
+    "initial_waiting_time": 3,
+    "waiting_time": 1.5,
     
     "special": {
         "write_email": [3, 10],
         "write_things": {
             "5": "Hola123#",
             "11": "Hola123#",
-            "16": "adrigongui"
+            "16": "tu_diseñador"
         },
         "write_code": [6],
         "human": [9],
-        "scroll": [12]
+        "scroll": [12],
+        "away_downloads": [22, 26, 27, 31, 32]
     },
 
-    "more_time": [15, 16, 20, 26, 31],
+    "more_time": [15, 16, 20, 26, 31, 38],
 
     "coordenates": {
         "16": [624, 164],

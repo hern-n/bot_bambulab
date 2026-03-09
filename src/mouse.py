@@ -5,6 +5,7 @@ import logging
 import winsound
 import sys
 import keyboard  
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -164,23 +165,30 @@ def go(x: int, y: int) -> bool:
 
 def wait_for_human(message: str = "Presiona F2 para continuar...") -> None:
     """
-    Play two beeps and wait for the user to press F2 to continue.
-
-    This function pauses execution until a human presses the F2 key,
-    playing audio beeps to alert the user. Works even if the console
-    is not in foreground.
-
-    Args:
-        message: The message to display to the user (default in Spanish)
+    Play two beeps and wait for the user to press F2 to continue,
+    or continue automatically after 25 seconds.
     """
 
     logger = logging.getLogger(__name__)
     logger.info("Playing alert beeps for human attention")
+
     winsound.MessageBeep(winsound.MB_OK)
     winsound.MessageBeep(winsound.MB_OK)
 
     print(message)
 
-    # Espera hasta que se presione F7
-    keyboard.wait("f2")
-    logger.info("Human pressed F2, continuing execution")
+    timeout = 25
+    start_time = time.time()
+
+    while True:
+        # Si presiona F2
+        if keyboard.is_pressed("f2"):
+            logger.info("Human pressed F2, continuing execution")
+            break
+
+        # Si pasan 25 segundos
+        if time.time() - start_time > timeout:
+            logger.info("Timeout reached (25s), continuing automatically")
+            break
+
+        time.sleep(0.1)  # evita consumir CPU

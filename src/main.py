@@ -21,11 +21,6 @@ import mouse
 import agentmail_client
 
 
-
-# Tiempo de espera entre acciones para asegurar carga completa de la interfaz
-waiting_time = 1.5
-initial_waiting_time = 3
-
 # Contador global para rastrear el elemento actual a procesar
 current_element_number = 0
 
@@ -36,11 +31,11 @@ def load_json(file_path: str) -> dict:
         return json.load(f)
 
 data = load_json("config.json")
-password = data["password"]
 
-# Inicializar el correo 
-agentmail_client.delete_all_inboxes()
-email = agentmail_client.create_inbox()
+# Tiempo de espera entre acciones para asegurar carga completa de la interfaz
+waiting_time = data["waiting_time"]
+initial_waiting_time = data["initial_waiting_time"]
+
 
 def main():
     """
@@ -118,16 +113,31 @@ def main():
         mouse.type_text(code)
     elif current_element_number in special["human"]:
         mouse.wait_for_human()
+        time.sleep(4)
     elif current_element_number in special["scroll"]:
         time.sleep(4)
         mouse.scroll_down()
+    elif current_element_number in special["away_downloads"]:
+        mouse.click_at_position([400,20])
+        time.sleep(0.4)
 
+running = True
+while running:
 
+    # Inicializar el correo 
+    agentmail_client.delete_all_inboxes()
+    email = agentmail_client.create_inbox()
 
-# Ejecutar el ciclo de automatización 6 veces para procesar los primeros 6 elementos
-# Cada iteración procesará un elemento diferente usando el contador global
-print("Starting BambuLab Bot automation...")
-time.sleep(initial_waiting_time)
-for _ in range(len(os.listdir("elements"))):
-    main()
-print("Automation completed.")
+    current_element_number = 0
+
+    # Ejecutar el ciclo de automatización 6 veces para procesar los primeros 6 elementos
+    # Cada iteración procesará un elemento diferente usando el contador global
+    print()
+    print()
+    print("Starting BambuLab Bot automation...")
+    time.sleep(initial_waiting_time)
+    for _ in range(len(os.listdir("elements"))):
+        main()
+    print("Automation completed.")
+    print()
+    print()
