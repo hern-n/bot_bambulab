@@ -6,6 +6,7 @@ import winsound
 import sys
 import keyboard  
 import time
+import scanner
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ def go(x: int, y: int) -> bool:
         return False
 
 
-def wait_for_human(message: str = "Presiona F2 para continuar...") -> None:
+def wait_for_human(image_model) -> None:
     """
     Play two beeps and wait for the user to press F2 to continue,
     or continue automatically after 25 seconds.
@@ -173,22 +174,29 @@ def wait_for_human(message: str = "Presiona F2 para continuar...") -> None:
     logger.info("Playing alert beeps for human attention")
 
     winsound.MessageBeep(winsound.MB_OK)
-    winsound.MessageBeep(winsound.MB_OK)
 
-    print(message)
+    print("Waiting for human...")
 
-    timeout = 25
+    timeout = 30
     start_time = time.time()
 
     while True:
-        # Si presiona F2
-        if keyboard.is_pressed("f2"):
-            logger.info("Human pressed F2, continuing execution")
-            break
+        
+        # Si se detecta que ya no está en la pantalla de CAPTCHA
+        scanner.clear_screenshots()
+        scanner.scan()
+
+        in_captcha_yet = scanner.image_exists("screenshots/1.png", image_model, 0.99)
+
+        if not in_captcha_yet:
+            print("Exit the captcha screen.")
+            time.sleep(4)
+            return
 
         # Si pasan 25 segundos
         if time.time() - start_time > timeout:
-            logger.info("Timeout reached (25s), continuing automatically")
-            break
+            logger.info("Timeout reached (25s), exit program")
+            winsound.MessageBeep(winsound.MB_OK)
+            sys.exit()
 
         time.sleep(0.1)  # evita consumir CPU

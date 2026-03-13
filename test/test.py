@@ -1,11 +1,13 @@
-import json
+import scanner
+import mouse
+import time
 
-def load_json(file_path: str) -> dict:
-    """Carga un archivo JSON y lo devuelve como un diccionario de Python."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-    
+time.sleep(4)
+scanner.clear_screenshots()
+scanner.scan()
 
-data = load_json("config.json")
+current_element_number = 9
 
-print(data["coordenates"]["16"])
+in_captcha_yet = scanner.image_exists("screenshots/1.png", f"elements/9.png", 0.99)
+
+print(in_captcha_yet)

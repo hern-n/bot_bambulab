@@ -19,6 +19,7 @@ import time
 import scanner
 import mouse
 import agentmail_client
+import keyboard
 
 
 # Contador global para rastrear el elemento actual a procesar
@@ -53,6 +54,11 @@ def main():
         None
     """
 
+    # Comrobar que no se le ha dado a salir del porgrama
+
+    if keyboard.is_pressed("f2"):
+        sys.exit()
+
     global current_element_number, data, email
 
     # Inicializar las acciones específicas
@@ -72,6 +78,11 @@ def main():
 
     # Limpiar capturas de pantalla anteriores para evitar confusiones en el análisis
     scanner.clear_screenshots()
+
+    # Comporbar si hay que quitar lo de las descargas de google
+    if current_element_number in special["away_downloads"]:
+        mouse.click_at_position([400,20])
+        time.sleep(0.4)
 
     # Si está en la lista de posiciones manuales, qeu clique en als coordendas manuales y se salte el resto
     if str(current_element_number) in coordenates:
@@ -99,27 +110,28 @@ def main():
                 print(f"No match found for elements/{current_element_number}.png")
                 time.sleep(waiting_time)
                 if i == 2: 
-                    mouse.wait_for_human()
+                    print("Elemnt not detected, exiting the program")
                     sys.exit()
 
     # Ejecutar acciones específicas según el tipo de elemento detectado
 
     if current_element_number in special["write_email"]:
         mouse.type_text(email)
+
     elif str(current_element_number) in special["write_things"]:
         mouse.type_text(special["write_things"][str(current_element_number)])
+
     elif current_element_number in special["write_code"]:
         code = agentmail_client.get_code(agentmail_client.get_email(email))
         mouse.type_text(code)
+
     elif current_element_number in special["human"]:
-        mouse.wait_for_human()
-        time.sleep(4)
+        mouse.wait_for_human(f"elements/{current_element_number}.png")
+
     elif current_element_number in special["scroll"]:
         time.sleep(4)
         mouse.scroll_down()
-    elif current_element_number in special["away_downloads"]:
-        mouse.click_at_position([400,20])
-        time.sleep(0.4)
+
 
 running = True
 while running:

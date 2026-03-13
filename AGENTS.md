@@ -1,7 +1,7 @@
 # AGENTS.md - BambuLab Bot Development Guide
 
 ## Project Overview
-Python 3.12 GUI automation bot using computer vision (OpenCV), OCR (pytesseract), and mouse automation (pyautogui) for screen interaction with graphical interfaces.
+Python 3.12 GUI automation bot using computer vision (OpenCV) and mouse automation (pyautogui) for screen interaction with graphical interfaces.
 
 ## Development Environment Setup
 ```bash
@@ -12,7 +12,9 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install dependencies
-pip install pyautogui opencv-python numpy pytesseract pyperclip
+pip install pyautogui opencv-python pyperclip keyboard
+
+# Install dev dependencies
 pip install black flake8 pytest pyflakes
 ```
 
@@ -36,11 +38,11 @@ pyflakes src/
 The `test/` folder contains exploratory tests for validating different technologies - NOT official project unit tests.
 ```bash
 pytest                        # Run all tests
-pytest test/                  # Run exploratory tests
-pytest test     # Run single test file
-pytest/agentmail.py test/agentmail.py::test_function_name  # Run single test function
+pytest test/                  # Run all exploratory tests
+pytest test/test.py           # Run single test file
+pytest test/agentmail_test.py::test_function_name  # Run single test function
 pytest -v                     # Verbose output
-pytest -k "agentmail"        # Run tests matching pattern
+pytest -k "agentmail"         # Run tests matching pattern
 ```
 
 ## Code Style Guidelines
@@ -55,13 +57,11 @@ pytest -k "agentmail"        # Run tests matching pattern
 # Standard library
 import os
 import sys
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple
 
 # Third-party
 import cv2
-import numpy as np
 import pyautogui
-import pytesseract
 
 # Local
 from src.mouse import click_at_position
@@ -108,13 +108,14 @@ logger.error("Failed", exc_info=True)
 ```
 bot_bambulab/
 ├── src/
-│   ├── main.py       # Main automation entry point
-│   ├── scanner.py    # Screenshot capture, template matching, OCR
-│   └── mouse.py      # Mouse automation (click, type, scroll)
-├── elements/         # Template images for matching
-├── screenshots/      # Captured screenshots
-├── test/             # Exploratory tests (not official unit tests)
-├── skills/           # Agent skills (see Skills section)
+│   ├── main.py           # Main automation entry point
+│   ├── scanner.py        # Screenshot capture, template matching
+│   ├── mouse.py          # Mouse automation (click, type, scroll)
+│   └── agentmail_client.py  # AgentMail API client
+├── elements/             # Template images for matching
+├── screenshots/          # Captured screenshots
+├── test/                 # Exploratory tests (not official unit tests)
+├── skills/               # Agent skills
 └── AGENTS.md
 ```
 
@@ -123,7 +124,7 @@ bot_bambulab/
 ### Scanner (`src/scanner.py`)
 - `scan()`: Capture screenshot, save sequentially numbered PNG
 - `match_template()`: Find template in screenshot (returns center coords)
-- `extract_numbers()`: Extract blue numeric codes via OCR/color detection
+- `image_exists()`: Check if template exists in screenshot (returns bool)
 - `clear_screenshots()`: Remove all screenshots
 
 ### Mouse (`src/mouse.py`)
@@ -133,10 +134,15 @@ bot_bambulab/
 - `paste_from_clipboard()`: Ctrl+V paste
 - `scroll_down(amount)`: Scroll down
 
+### AgentMail (`src/agentmail_client.py`)
+- `create_inbox()`: Create a new email inbox
+- `get_email(inbox_id)`: Get email address for inbox
+- `get_code(inbox_id)`: Get verification code from inbox
+- `delete_all_inboxes()`: Delete all inboxes
+
 ## Skills (AgentMail Integration)
 
 This project includes skills for AgentMail - an API-first email platform for AI agents.
-Additional skills may be added in the future.
 
 ### What is AgentMail?
 AgentMail gives AI agents their own email inboxes. Use it for:
@@ -145,18 +151,14 @@ AgentMail gives AI agents their own email inboxes. Use it for:
 - Managing attachments
 - Real-time notifications via webhooks/websockets
 
-See `agentmail-skills/agentmail/SKILL.md` for full API reference.
-
 ### Skills Location
 - Current skills: `agentmail-skills/agentmail/` (git submodule)
-- Future skills: May be added to `skills/` directory
 
 ## Dependencies
 - `pyautogui` - GUI automation
 - `opencv-python` - Computer vision
-- `numpy` - Array operations
-- `pytesseract` - OCR
 - `pyperclip` - Clipboard access
+- `keyboard` - Keyboard input detection
 - `pytest` - Testing
 
 ## Security Notes
