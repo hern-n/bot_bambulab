@@ -1,9 +1,12 @@
 from typing import Optional
+import logging
 import re
 import os
 
 import dotenv
 from agentmail import AgentMail
+
+logger = logging.getLogger(__name__)
 
 dotenv.load_dotenv()
 
@@ -13,7 +16,7 @@ client = AgentMail(api_key=os.getenv("AGENTMAIL_API_KEY"))
 def create_inbox() -> str:
     """Create an inbox and return its ID."""
     inbox = client.inboxes.create()
-    print("Inbox created successfully")
+    logger.info("Inbox created successfully")
     return inbox.inbox_id
 
 
@@ -45,7 +48,7 @@ def get_code(html: str) -> Optional[int]:
 
 def delete_inbox(inbox_id: str) -> None:
     client.inboxes.delete(inbox_id=inbox_id)
-    print(f"Deleted Inbox: {inbox_id}")
+    logger.info(f"Deleted Inbox: {inbox_id}")
 
 
 def delete_all_inboxes() -> None:
@@ -59,10 +62,13 @@ def list_inboxes() -> list[tuple[str, str]]:
     inboxes = response.inboxes if hasattr(response, "inboxes") else response
     return [(inbox.inbox_id, getattr(inbox, "name", "")) for inbox in inboxes]
 
-if __name__ == "__main__":
-    delete_all_inboxes()
-    id = create_inbox()
-    print(id)
 
-    a = input()
-    print(get_code(get_email(id)))
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    delete_all_inboxes()
+    inbox_id = create_inbox()
+    logger.info(f"Created inbox: {inbox_id}")
+
+    input_str = input()
+    code = get_code(get_email(inbox_id))
+    logger.info(f"Verification code: {code}")

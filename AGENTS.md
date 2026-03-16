@@ -104,6 +104,13 @@ logger.debug(f"Processing {count} items")
 logger.error("Failed", exc_info=True)
 ```
 
+**IMPORTANT**: Never use `print()` for debugging or logging. Always use the `logging` module instead.
+- Use `logger.debug()` for detailed debug information
+- Use `logger.info()` for general information
+- Use `logger.warning()` for warnings
+- Use `logger.error()` for errors
+- Never leave debug `print()` statements in production code
+
 ## File Structure
 ```
 bot_bambulab/

@@ -1,8 +1,9 @@
-import pyautogui
-import cv2
-from pathlib import Path
 import logging
+from pathlib import Path
 from typing import Optional, Tuple
+
+import cv2
+import pyautogui
 
 logger = logging.getLogger(__name__)
 
@@ -175,4 +176,6 @@ def clear_screenshots() -> int:
 
 
 if __name__ == "__main__":
-    print(scan())
+    logging.basicConfig(level=logging.INFO)
+    result = scan()
+    logger.info(f"Screenshot saved: {result}")

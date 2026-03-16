@@ -1,12 +1,12 @@
-import pyautogui
-from typing import Union, Tuple, List
-import pyperclip
 import logging
-import winsound
 import sys
-import keyboard  
 import time
+
+import pyautogui
+import pyperclip
 import scanner
+import winsound
+from typing import List, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -170,18 +170,17 @@ def wait_for_human(image_model) -> None:
     or continue automatically after 25 seconds.
     """
 
-    logger = logging.getLogger(__name__)
     logger.info("Playing alert beeps for human attention")
 
     winsound.MessageBeep(winsound.MB_OK)
 
-    print("Waiting for human...")
+    logger.info("Waiting for human...")
 
     timeout = 30
     start_time = time.time()
 
     while True:
-        
+
         # Si se detecta que ya no está en la pantalla de CAPTCHA
         scanner.clear_screenshots()
         scanner.scan()
@@ -189,7 +188,7 @@ def wait_for_human(image_model) -> None:
         in_captcha_yet = scanner.image_exists("screenshots/1.png", image_model, 0.99)
 
         if not in_captcha_yet:
-            print("Exit the captcha screen.")
+            logger.info("Exit the captcha screen.")
             time.sleep(4)
             return
 

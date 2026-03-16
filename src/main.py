@@ -12,6 +12,7 @@ secuenciales en pantalla y realizando acciones específicas según el tipo de el
 """
 
 import json
+import logging
 import os
 import sys
 import time
@@ -20,6 +21,8 @@ import scanner
 import mouse
 import agentmail_client
 import keyboard
+
+logger = logging.getLogger(__name__)
 
 
 # Contador global para rastrear el elemento actual a procesar
@@ -31,6 +34,7 @@ def load_json(file_path: str) -> dict:
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 data = load_json("config.json")
 
 # Tiempo de espera entre acciones para asegurar carga completa de la interfaz
@@ -41,7 +45,7 @@ initial_waiting_time = data["initial_waiting_time"]
 def main():
     """
     Función principal de automatización que ejecuta un ciclo completo de interacción.
-    
+
     Proceso:
     1. Incrementa el contador de elementos
     2. Espera a que la interfaz esté lista
@@ -49,7 +53,7 @@ def main():
     4. Busca el elemento correspondiente mediante plantilla
     5. Realiza clic si encuentra el elemento
     6. Ejecuta acciones específicas según el tipo de elemento
-    
+
     Returns:
         None
     """
@@ -66,35 +70,34 @@ def main():
     more_time = data["more_time"]
     coordenates = data["coordenates"]
 
-    # Incrementar el número de elemento actual para buscar el siguiente elemento en la secuencia
+    # Incrementar el número de elemento actual
     current_element_number += 1
 
-    # Esperar un tiempo configurable para asegurar que la interfaz se cargue completamente
+    # Esperar un tiempo configurable para asegurar carga completa
     if current_element_number in more_time:
         time.sleep(waiting_time * 3.1)
     else:
         time.sleep(waiting_time)
-    
 
     # Limpiar capturas de pantalla anteriores para evitar confusiones en el análisis
     scanner.clear_screenshots()
 
     # Comporbar si hay que quitar lo de las descargas de google
     if current_element_number in special["away_downloads"]:
-        mouse.click_at_position([400,20])
+        mouse.click_at_position([400, 20])
         time.sleep(0.4)
 
-    # Si está en la lista de posiciones manuales, qeu clique en als coordendas manuales y se salte el resto
+    # Si está en la lista de posiciones manuales, cliquea en coordenadas
     if str(current_element_number) in coordenates:
-        print("hi: ", current_element_number)
+        logger.info(f"Manual coordinate click: {current_element_number}")
         mouse.click_at_position(coordenates[str(current_element_number)])
 
-    else: 
+    else:
 
         # Capturar la pantalla actual para análisis de elementos
         scanner.scan()
 
-        for i in range (3):
+        for i in range(3):
             # Buscar la posición del elemento actual usando coincidencia de plantillas
             match_result = scanner.match_template(
                 "screenshots/1.png", f"elements/{current_element_number}.png"
@@ -103,14 +106,15 @@ def main():
             # Si se encuentra el elemento, realizar clic en su posición
             if match_result is not None:
                 mouse.click_at_position(match_result)
-                print(f"Clicked on element {current_element_number}")
+                logger.debug(f"Clicked on element {current_element_number}")
                 break
             else:
-                # Registrar cuando no se encuentra un elemento para depuración
-                print(f"No match found for elements/{current_element_number}.png")
+                logger.warning(
+                    f"No match found for elements/{current_element_number}.png"
+                )
                 time.sleep(waiting_time)
-                if i == 2: 
-                    print("Elemnt not detected, exiting the program")
+                if i == 2:
+                    logger.error("Element not detected, exiting the program")
                     sys.exit()
 
     # Ejecutar acciones específicas según el tipo de elemento detectado
@@ -136,7 +140,7 @@ def main():
 running = True
 while running:
 
-    # Inicializar el correo 
+    # Inicializar el correo
     agentmail_client.delete_all_inboxes()
     email = agentmail_client.create_inbox()
 
@@ -144,12 +148,12 @@ while running:
 
     # Ejecutar el ciclo de automatización 6 veces para procesar los primeros 6 elementos
     # Cada iteración procesará un elemento diferente usando el contador global
-    print()
-    print()
-    print("Starting BambuLab Bot automation...")
+    logger.info("")
+    logger.info("")
+    logger.info("Starting BambuLab Bot automation...")
     time.sleep(initial_waiting_time)
     for _ in range(len(os.listdir("elements"))):
         main()
-    print("Automation completed.")
-    print()
-    print()
+    logger.info("Automation completed.")
+    logger.info("")
+    logger.info("")
