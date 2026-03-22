@@ -11,11 +11,14 @@ El proceso se repite un número determinado de veces, buscando elementos
 secuenciales en pantalla y realizando acciones específicas según el tipo de elemento.
 """
 
+import ctypes
 import json
 import logging
 import os
 import sys
 import time
+
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 import scanner
 import mouse

@@ -1,11 +1,23 @@
+import ctypes
 import logging
 from pathlib import Path
 from typing import Optional, Tuple
 
 import cv2
+import numpy as np
 import pyautogui
 
 logger = logging.getLogger(__name__)
+
+
+def get_scale_factor() -> float:
+    """Get current system DPI scale factor."""
+    try:
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAwareness(2)
+        return user32.GetDpiForSystem() / 96.0
+    except Exception:
+        return 1.0
 
 
 def scan() -> str:
@@ -87,6 +99,18 @@ def match_template(
             )
             return None
 
+        # Scale template based on DPI
+        scale = get_scale_factor()
+        if scale != 1.0:
+            model_image = cv2.resize(
+                model_image,
+                None,
+                fx=scale,
+                fy=scale,
+                interpolation=cv2.INTER_LINEAR,
+            )
+            logger.debug(f"Scaled template by {scale}x for DPI adjustment")
+
         # Convert to grayscale for better matching
         screenshot_gray = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
         model_gray = cv2.cvtColor(model_image, cv2.COLOR_BGR2GRAY)
@@ -134,7 +158,7 @@ def match_template(
             f"Best match: {method_used} score={best_score:.3f} at "
             f"center ({center_x}, {center_y})"
         )
-        return int(center_x), int(center_y)
+        return int(center_x / scale), int(center_y / scale)
 
     except Exception as e:
         logger.error(f"Error during image matching: {e}")
