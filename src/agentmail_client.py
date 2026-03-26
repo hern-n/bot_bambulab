@@ -12,6 +12,20 @@ dotenv.load_dotenv()
 
 client = AgentMail(api_key=os.getenv("AGENTMAIL_API_KEY"))
 
+def _clean_html(html: str) -> str:
+    """Convert HTML to terminal-friendly text."""
+    if not html:
+        return ""
+    text = re.sub(r"<br\s*/?>", "\n", html)
+    text = re.sub(r"</p>", "\n\n", text)
+    text = re.sub(r"</div>", "\n", text)
+    text = re.sub(r"<td\s+[^>]*style=\"[^\"]*font-size:24px[^\"]*\"[^>]*>([^<]+)</td>", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"\n\s*\n", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    text = text.strip()
+    return text
+
 
 def create_inbox() -> str:
     """Create an inbox and return its ID."""
@@ -42,8 +56,9 @@ def get_email(inbox_id: str) -> Optional[str]:
 
 def get_code(html: str) -> Optional[int]:
     """Extract the 6-digit verification code from the email HTML."""
-    match = re.search(r"font-size:24px[^>]*>\s*(\d{6})\s*<", html)
-    return str(match.group(1)) if match else None
+    body = _clean_html(html)
+    match = re.search(r"\b\d{6}\b", body)
+    return str(match.group()) if match else None
 
 
 def delete_inbox(inbox_id: str) -> None:
@@ -61,6 +76,7 @@ def list_inboxes() -> list[tuple[str, str]]:
     response = client.inboxes.list()
     inboxes = response.inboxes if hasattr(response, "inboxes") else response
     return [(inbox.inbox_id, getattr(inbox, "name", "")) for inbox in inboxes]
+
 
 
 if __name__ == "__main__":
