@@ -166,36 +166,36 @@ def go(x: int, y: int) -> bool:
 
 def wait_for_human(image_model) -> None:
     """
-    Play two beeps and wait for the user to press F2 to continue,
-    or continue automatically after 25 seconds.
+    Play audible beeps and wait for user to resolve captcha,
+    or continue automatically after timeout.
     """
-
     logger.info("Playing alert beeps for human attention")
 
-    winsound.MessageBeep(winsound.MB_OK)
+    frequency = 800
+    duration = 500
+    for _ in range(3):
+        winsound.Beep(frequency, duration)
+        time.sleep(0.3)
 
-    logger.info("Waiting for human...")
+    logger.info("Waiting for human to resolve captcha...")
 
     timeout = 30
     start_time = time.time()
 
     while True:
-
-        # Si se detecta que ya no está en la pantalla de CAPTCHA
         scanner.clear_screenshots()
         scanner.scan()
 
         in_captcha_yet = scanner.image_exists("screenshots/1.png", image_model, 0.99)
 
         if not in_captcha_yet:
-            logger.info("Exit the captcha screen.")
+            logger.info("Captcha resolved, continuing.")
             time.sleep(4)
             return
 
-        # Si pasan 25 segundos
         if time.time() - start_time > timeout:
-            logger.info("Timeout reached (25s), exit program")
-            winsound.MessageBeep(winsound.MB_OK)
+            logger.warning("Timeout reached (30s), exiting program")
+            winsound.Beep(400, 800)
             sys.exit()
 
-        time.sleep(0.1)  # evita consumir CPU
+        time.sleep(0.1)
