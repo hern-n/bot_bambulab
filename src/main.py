@@ -18,8 +18,6 @@ import os
 import sys
 import time
 
-ctypes.windll.shcore.SetProcessDpiAwareness(2)
-
 import scanner
 import mouse
 import agentmail_client
@@ -27,6 +25,11 @@ import keyboard
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 # Contador global para rastrear el elemento actual a procesar
 current_element_number = 0
