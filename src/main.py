@@ -97,7 +97,6 @@ def main():
     if str(current_element_number) in coordenates:
         logger.info(f"Manual coordinate click: {current_element_number}")
         mouse.click_at_position(coordenates[str(current_element_number)])
-
     else:
 
         # Capturar la pantalla actual para análisis de elementos
