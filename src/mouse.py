@@ -172,8 +172,9 @@ def wait_for_human(image_model) -> None:
     logger.info("Playing alert beeps for human attention")
 
     frequency = 800
-    duration = 500
-    for _ in range(3):
+    duration = 750
+    times = 1
+    for _ in range(times):
         winsound.Beep(frequency, duration)
         time.sleep(0.3)
 
