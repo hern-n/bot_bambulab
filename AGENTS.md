@@ -1,48 +1,41 @@
 # AGENTS.md - BambuLab Bot Development Guide
 
-## Project Overview
-Python 3.12 GUI automation bot using computer vision (OpenCV) and mouse automation (pyautogui) for screen interaction with graphical interfaces.
+Python 3.12+ GUI automation bot using computer vision (OpenCV) and mouse automation (pyautogui) for screen interaction with graphical interfaces.
 
-## Development Environment Setup
+## Development Environment
+
 ```bash
-# Activate virtual environment (Windows)
-venv\Scripts\activate
-
-# Activate virtual environment (Unix/Linux)
-source venv/bin/activate
+# Activate virtual environment
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # Unix/Linux
 
 # Install dependencies
-pip install pyautogui opencv-python pyperclip keyboard
+pip install -r requirements.txt
 
-# Install dev dependencies
-pip install black flake8 pytest pyflakes
+# Run the application
+python src/main.py
+python src/scanner.py
 ```
 
 ## Build/Lint/Test Commands
 
-### Running the Application
-```bash
-python src/main.py
-python src/scanner.py
-python -c "import src.scanner as s; print(s.scan())"
-```
-
 ### Code Quality
 ```bash
-black src/                    # Format code (line length: 88)
+black src/                     # Format code (line length: 88)
 flake8 src/ --max-line-length=88
 pyflakes src/
 ```
 
-### Testing (Exploratory)
-The `test/` folder contains exploratory tests for validating different technologies - NOT official project unit tests.
+### Testing
+The `test/` folder contains exploratory tests for validating technologies - NOT official unit tests.
+
 ```bash
-pytest                        # Run all tests
-pytest test/                  # Run all exploratory tests
-pytest test/test.py           # Run single test file
+pytest                          # Run all tests
+pytest test/                    # Run all tests in directory
+pytest test/test.py             # Run single test file
 pytest test/agentmail_test.py::test_function_name  # Run single test function
-pytest -v                     # Verbose output
-pytest -k "agentmail"         # Run tests matching pattern
+pytest -v                      # Verbose output
+pytest -k "pattern"            # Run tests matching pattern
 ```
 
 ## Code Style Guidelines
@@ -51,21 +44,24 @@ pytest -k "agentmail"         # Run tests matching pattern
 - PEP 8 compliant, formatted with Black (88 char line limit)
 - Type hints required for function signatures
 - Maximum line length: 88 characters
+- Docstrings for all public functions and modules
 
 ### Import Order
+1. Standard library (`import logging`, `import os`, `from typing import Optional`)
+2. Third-party (`import cv2`, `import pyautogui`)
+3. Local imports (`import scanner`, `from src.mouse import go`)
+
 ```python
-# Standard library
+import logging
 import os
-import sys
 from typing import Optional, Tuple
 
-# Third-party
 import cv2
+import numpy as np
 import pyautogui
 
-# Local
+import scanner
 from src.mouse import click_at_position
-from src.scanner import scan
 ```
 
 ### Naming Conventions
@@ -80,7 +76,14 @@ from src.scanner import scan
 ### Type Hints
 ```python
 def process_image(path: str, options: Optional[dict] = None) -> Tuple[bool, str]:
-    pass
+    ...
+
+def match_template(
+    screenshot_path: str,
+    model_image_path: str,
+    threshold: float = 0.85,
+) -> Optional[Tuple[int, int]]:
+    ...
 ```
 
 ### Error Handling
@@ -99,76 +102,71 @@ except Exception as e:
 ```python
 logger = logging.getLogger(__name__)
 
-logger.info("Operation started")
-logger.debug(f"Processing {count} items")
-logger.error("Failed", exc_info=True)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
 ```
 
-**IMPORTANT**: Never use `print()` for debugging or logging. Always use the `logging` module instead.
-- Use `logger.debug()` for detailed debug information
-- Use `logger.info()` for general information
-- Use `logger.warning()` for warnings
-- Use `logger.error()` for errors
-- Never leave debug `print()` statements in production code
+**Never use `print()`** - always use the logging module:
+- `logger.debug()` - detailed debug information
+- `logger.info()` - general information
+- `logger.warning()` - warnings
+- `logger.error()` - errors
 
 ## File Structure
 ```
-bot_bambulab/
+bot_bambulab_edge/
 ├── src/
-│   ├── main.py           # Main automation entry point
-│   ├── scanner.py        # Screenshot capture, template matching
-│   ├── mouse.py          # Mouse automation (click, type, scroll)
+│   ├── main.py              # Main automation entry point
+│   ├── scanner.py           # Screenshot capture, template matching
+│   ├── mouse.py             # Mouse/keyboard automation
 │   └── agentmail_client.py  # AgentMail API client
-├── elements/             # Template images for matching
-├── screenshots/          # Captured screenshots
-├── test/                 # Exploratory tests (not official unit tests)
-├── skills/               # Agent skills
-└── AGENTS.md
+├── elements/                # Template images for OpenCV matching
+├── screenshots/             # Captured screenshots
+├── test/                    # Exploratory tests
+├── config.json              # Automation configuration
+├── requirements.txt         # Dependencies
+└── AGENTS.md                # This file
 ```
 
 ## Core Modules
 
 ### Scanner (`src/scanner.py`)
-- `scan()`: Capture screenshot, save sequentially numbered PNG
-- `match_template()`: Find template in screenshot (returns center coords)
-- `image_exists()`: Check if template exists in screenshot (returns bool)
-- `clear_screenshots()`: Remove all screenshots
+- `scan() -> str`: Capture screenshot, save sequentially numbered PNG
+- `match_template(screenshot, model, threshold) -> Optional[Tuple[int, int]]`: Find template in screenshot, returns center coords
+- `image_exists(screenshot, model, threshold) -> bool`: Check if template exists
+- `clear_screenshots() -> int`: Remove all screenshots, returns count
 
 ### Mouse (`src/mouse.py`)
-- `click_at_position((x, y))`: Left-click at coordinates
-- `go(x, y)`: Move mouse to coordinates
-- `type_text(text)`: Type text at cursor
-- `paste_from_clipboard()`: Ctrl+V paste
-- `scroll_down(amount)`: Scroll down
+- `click_at_position(coordinates)`: Left-click at (x, y)
+- `go(x, y) -> bool`: Move mouse to coordinates
+- `type_text(text) -> bool`: Type text via clipboard paste
+- `paste_from_clipboard() -> bool`: Ctrl+V paste
+- `scroll_down(amount=300) -> bool`: Scroll down
+- `wait_for_human(image_model)`: Play beeps, wait for user/CAPTCHA resolution
 
 ### AgentMail (`src/agentmail_client.py`)
-- `create_inbox()`: Create a new email inbox
-- `get_email(inbox_id)`: Get email address for inbox
-- `get_code(inbox_id)`: Get verification code from inbox
+- `create_inbox() -> str`: Create inbox, return inbox_id
+- `get_email(inbox_id) -> Optional[str]`: Get email HTML body
+- `get_code(html) -> Optional[int]`: Extract 6-digit verification code
+- `delete_inbox(inbox_id)`: Delete single inbox
 - `delete_all_inboxes()`: Delete all inboxes
-
-## Skills (AgentMail Integration)
-
-This project includes skills for AgentMail - an API-first email platform for AI agents.
-
-### What is AgentMail?
-AgentMail gives AI agents their own email inboxes. Use it for:
-- Creating inboxes programmatically
-- Sending/receiving emails
-- Managing attachments
-- Real-time notifications via webhooks/websockets
-
-### Skills Location
-- Current skills: `agentmail-skills/agentmail/` (git submodule)
+- `list_inboxes() -> list[tuple]`: List all inboxes
 
 ## Dependencies
-- `pyautogui` - GUI automation
-- `opencv-python` - Computer vision
-- `pyperclip` - Clipboard access
-- `keyboard` - Keyboard input detection
-- `pytest` - Testing
+| Package | Purpose |
+|---------|---------|
+| pyautogui | GUI automation |
+| opencv-python | Computer vision |
+| pyperclip | Clipboard access |
+| keyboard | Keyboard input |
+| pytest | Testing |
+| agentmail | Email API client |
 
 ## Security Notes
 - Never commit screenshots with sensitive data
-- Use `.env` for API keys (already in `.gitignore`)
+- Use `.env` for API keys (in `.gitignore`)
 - Validate image paths before processing
+- pyautogui fail-safe: move mouse to screen corner to abort
