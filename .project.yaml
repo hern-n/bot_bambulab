@@ -1,0 +1,20 @@
+name: bot_bambulab
+description: >-
+  Python GUI automation bot using computer vision (OpenCV) and mouse automation (pyautogui) for screen interaction with
+  graphical interfaces.
+author: Hernán
+technologies:
+  - Python
+  - OpenCV
+  - PyAutoGUI
+  - Computer Vision
+  - GUI Automation
+repository: https://github.com/hern-n/bot_bambulab.git
+license: MIT
+tags:
+  - automation
+  - gui
+  - bot
+  - computer-vision
+  - opencv
+lastModified: '2026-05-01T10:32:02.025Z'
